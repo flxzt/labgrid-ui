@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=0.1.0
+Name=Labgrid-UI
+Comment=A client UI for labgrid
+Exec=labgrid-ui
+Type=Application
+Terminal=false
+Icon=com.duagon.labgrid-ui
+Categories=Utility;Development;

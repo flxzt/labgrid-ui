@@ -1,0 +1,6 @@
+# SPDX-FileCopyrightText: 2025 Duagon Germany GmbH
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+[profile.ci.junit]
+path = "test-report-junit.xml"

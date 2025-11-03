@@ -1,0 +1,147 @@
+# SPDX-FileCopyrightText: 2025 Duagon Germany GmbH
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+stages:
+  - check
+  - build
+  - licensing
+
+variables:
+  FEDORA_IMAGE: fedora:42
+
+.before-script-steps: &before-script-steps
+  - dnf install -y lsb-release just
+  - just ci=true prerequisites
+  - export PATH="$HOME/.cargo/bin:$PATH"
+  - curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+
+fmt-check:
+  stage: check
+  image: $FEDORA_IMAGE
+  tags:
+    - docker
+  before_script:
+    - *before-script-steps
+  script:
+    - just ci=true fmt-check
+  needs: []
+
+lint:
+  stage: check
+  image: $FEDORA_IMAGE
+  tags:
+    - docker
+  before_script:
+    - *before-script-steps
+    - cargo binstall -y gitlab_clippy
+  script:
+    - just ci=true lint
+  after_script:
+    # Run clippy again to generate reports of findings to allow Gitlab quality reports
+    # (which are shown in merge requests)
+    - export PATH="$HOME/.cargo/bin:$PATH"
+    - cargo clippy --color always --message-format=json | gitlab-clippy > code-quality-report.json
+  artifacts:
+    when: always
+    reports:
+      codequality: code-quality-report.json
+    expire_in: 1 week
+  needs: []
+
+unit-tests:
+  stage: check
+  image: $FEDORA_IMAGE
+  tags:
+    - docker
+  before_script:
+    - *before-script-steps
+    - cargo binstall -y cargo-nextest
+  script:
+    - just ci=true test
+  artifacts:
+    when: always
+    reports:
+      junit: target/nextest/test-report-junit.xml
+    expire_in: 1 week
+  needs: []
+
+build-ui:
+  stage: build
+  image: $FEDORA_IMAGE
+  tags:
+    - docker
+  before_script:
+    - *before-script-steps
+  script:
+    - just ci=true cargo_profile=release build
+  artifacts:
+    paths:
+      - target/release/labgrid-ui
+  needs: []
+
+build-ui-flatpak:
+  stage: build
+  image: $FEDORA_IMAGE
+  tags:
+    - docker
+  before_script:
+    - *before-script-steps
+    - just ci=true prerequisites-flatpak
+  script:
+    - just ci=true cargo_profile=release build-ui-flatpak
+  artifacts:
+    paths:
+      - ./*.flatpak
+  needs: []
+
+licensing-check:
+  stage: licensing
+  image: $FEDORA_IMAGE
+  tags:
+    - docker
+  rules:
+      - when: always
+  dependencies: []
+  before_script:
+    - *before-script-steps
+    - dnf install -y python3 uv
+    - cargo binstall -y cargo-deny
+  script:
+    - just ci=true licensing-check
+    - just ci=true licensing-dependencies-check
+
+licencing-doc-export:
+  stage: licensing
+  image: $FEDORA_IMAGE
+  tags:
+    - docker
+  rules:
+      - when: always
+  dependencies: []
+  before_script:
+    - *before-script-steps
+    - dnf install -y python3 uv
+  script:
+    - just ci=true licensing-doc-export
+  artifacts:
+    paths:
+      - "**/*.spdx"
+
+sbom-export:
+  stage: licensing
+  image: $FEDORA_IMAGE
+  tags:
+    - docker
+  rules:
+      - when: always
+  dependencies: []
+  before_script:
+    - *before-script-steps
+    - dnf install -y python3 uv
+    - cargo binstall -y cargo-cyclonedx
+  script:
+    - just ci=true sbom-export
+  artifacts:
+    paths:
+      - "**/*.cdx.xml"

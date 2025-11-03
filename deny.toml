@@ -1,0 +1,25 @@
+# SPDX-FileCopyrightText: 2025 Felix Zwettler <felix.zwettler@duagon.com>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+[graph]
+targets = ["x86_64-unknown-linux-gnu", "x86_64-pc-windows-msvc"]
+
+[advisories]
+unmaintained = "workspace"
+
+[licenses]
+# allowed licenses need to be compatible with GPL-3.0
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "MPL-2.0",
+    "BSL-1.0",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "GPL-3.0",
+    "Unicode-3.0",
+    "Zlib",
+    "ISC",
+    "CC0-1.0",
+]

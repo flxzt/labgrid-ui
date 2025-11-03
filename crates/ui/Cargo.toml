@@ -1,0 +1,42 @@
+# SPDX-FileCopyrightText: 2025 Duagon Germany GmbH
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+[package]
+authors.workspace = true
+build = "build.rs"
+edition.workspace = true
+license.workspace = true
+name = "labgrid-ui"
+rust-version.workspace = true
+version = "0.1.0"
+
+[dependencies]
+anyhow = { workspace = true }
+arboard = { workspace = true }
+clap = { workspace = true, features = ["derive", "env"] }
+directories = { workspace = true }
+fluent = { workspace = true }
+futures-util = { workspace = true }
+i18n-embed = { workspace = true, features = [
+    "fluent-system",
+    "desktop-requester",
+] }
+i18n-embed-fl = { workspace = true }
+iced = { workspace = true, features = ["debug", "tokio", "image", "advanced"] }
+iced_aw = { workspace = true, features = ["tabs"] }
+iced_fonts = { workspace = true, features = ["bootstrap"] }
+labgrid-ui-core = { workspace = true }
+notify = { workspace = true }
+numeric-sort = { workspace = true }
+once_cell = { workspace = true }
+rfd = { workspace = true }
+rust-embed = { workspace = true, features = ["debug-embed"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true, features = ["full"] }
+tokio-stream = { workspace = true }
+tokio-util = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["env-filter"] }
+whoami = { workspace = true }

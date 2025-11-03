@@ -1,0 +1,54 @@
+# SPDX-FileCopyrightText: 2025 Duagon Germany GmbH
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+---
+id: "com.duagon.labgrid-ui"
+runtime: org.freedesktop.Platform
+runtime-version: "25.08"
+sdk: org.freedesktop.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+command: labgrid-ui
+finish-args:
+  - "--socket=wayland"
+  - "--socket=fallback-x11"
+  - "--device=dri"
+  - "--share=network"
+  - "--share=ipc"
+  - "--filesystem=xdg-documents"
+  - "--filesystem=xdg-run/gvfs"
+  - "--filesystem=xdg-run/gvfsd"
+  - "--env=RUST_LOG=labgrid_ui=warn"
+build-options:
+  append-path: "/usr/lib/sdk/rust-stable/bin"
+  build-args:
+    - "--share=network"
+  test-args:
+    - "--socket=x11"
+    - "--share=network"
+modules:
+  - name: protoc
+    buildsystem: simple
+    build-commands:
+      - "ls -la"
+      - "install -Dm755 ./bin/protoc -t /app/bin/"
+    sources:
+      - type: archive
+        # TODO: how to make this work for additional architectures like arm64?
+        url: https://github.com/protocolbuffers/protobuf/releases/download/v27.2/protoc-27.2-linux-x86_64.zip
+        sha256: 4a95e0ea2e51720af86a92f48d4997c8756923a9d0c58fd8a850657cd7479caf
+        strip-components: 0
+
+  - name: labgrid-ui
+    buildsystem: simple
+    build-commands:
+      - "cargo fetch --manifest-path crates/ui/Cargo.toml --verbose"
+      - "cargo build --release --verbose --package labgrid-ui"
+      - "install -Dm755 ./target/release/labgrid-ui -t /app/bin/"
+      - "install -Dm644 ./crates/ui/data/com.duagon.labgrid-ui.metainfo.xml -t /app/share/metainfo/"
+      - "install -Dm755 ./crates/ui/data/com.duagon.labgrid-ui.desktop -t /app/share/applications/"
+      - "install -Dm644 ./crates/ui/data/icons/com.duagon.labgrid-ui.svg -t /app/share/icons/hicolor/scalable/apps/"
+    sources:
+      - type: dir
+        path: ../

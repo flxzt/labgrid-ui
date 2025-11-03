@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+SPDX-FileCopyrightText: 2025 Duagon Germany GmbH
+
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+
+<component type="desktop-application">
+  <id>com.duagon.labgrid-ui</id>
+  <metadata_license>CC0</metadata_license>
+  <project_license>MIT</project_license>
+  <name translatable="no">Labgrid-UI</name>
+  <launchable type="desktop-id">com.duagon.labgrid-ui.desktop</launchable>
+  <summary>Client UI for labgrid</summary>
+
+  <categories>
+    <category>Development</category>
+  </categories>
+
+  <description>
+    <p>
+      Client UI for Labgrid
+    </p>
+  </description>
+
+  <recommends>
+    <control>keyboard</control>
+    <control>pointing</control>
+    <display_length compare="ge">500</display_length>
+  </recommends>
+
+  <url type="homepage">https://git.duagon.com/project/general/tools/labequipment/labgrid-ui</url>
+  <url type="bugtracker">https://git.duagon.com/project/general/tools/labequipment/labgrid-ui/-/issues</url>
+  <developer_name>The Labgrid-UI Authors</developer_name>
+  <update_contact>felix.zwettler@duagon.com</update_contact>
+  <content_rating type="oars-1.0" />
+
+  <provides>
+    <binary>labgrid-ui</binary>
+  </provides>
+
+  <releases>
+    <release version="0.1.0" date="2024-07-17">
+      <description>
+        see: https://git.duagon.com/project/general/tools/labequipment/labgrid-ui/-/releases
+      </description>
+    </release>
+  </releases>
+</component>

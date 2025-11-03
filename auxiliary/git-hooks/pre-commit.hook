@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+
+echo "### Running pre-commit hook ###"
+
+# Formatting
+just fmt-check
+
+if test $? != 0; then
+    echo "### Formatting check failed ###"
+    echo "Please fix the above issues reported by the linter either manually or by running 'just fmt'"
+    exit 1
+else
+    echo "### Formatting check passed ###"
+fi
+
+# Linting
+just lint
+
+if test $? != 0; then
+    echo "### Linting failed ###"
+    echo "Please fix the above issues reported by the linter"
+    exit 1
+else
+    echo "### Linting passed ###"
+fi
+
+# Check licensing compliancy
+just licensing-check
+
+if test $? != 0; then
+    echo "### Checking licensing compliancy failed ###"
+    echo "Please fix the above issues reported by the licensing compliancy check"
+    exit 1
+else
+    echo "### Checking licensing compliancy passed ###"
+fi
+
+# Check dependencies licensing
+just licensing-dependencies-check
+
+if test $? != 0; then
+    echo "### Checking dependencies licensing failed ###"
+    echo "Please fix the above issues reported by the dependencies licensing check"
+    exit 1
+else
+    echo "### Checking dependencies licensing passed ###"
+fi
