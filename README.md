@@ -73,7 +73,7 @@ Once launched, the app will create directory `~/.local/share/labgrid-ui/scripts`
 contained in it under the `Scripts` view.
 This is a feature to be able to execute simple tasks from the UI in a flexible manner.
 All scripts are launched with the virtual environment of the testfarm labgrid deployment, by default located in
-`/opt/venvs/labgrid`, so `labgrid-client` and `lg_ext` commands are available.
+`/opt/labgrid/venv`, so `labgrid-client` and `lg_ext` commands are available.
 By selecting the place `LG_PLACE` and the location of the environment configuration file `LG_ENV` in the UI users are
 able to re-use these scripts, but it is also possible to create scripts that hardcode the configuration in order to
 execute tasks for specific places.

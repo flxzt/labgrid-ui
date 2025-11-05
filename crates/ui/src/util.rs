@@ -36,7 +36,7 @@ pub(crate) fn default_scripts_dir() -> PathBuf {
 
 /// Returns the default python virtual environment directory.
 pub(crate) fn default_venv_dir() -> PathBuf {
-    PathBuf::from("/opt/venvs/labgrid")
+    PathBuf::from("/opt/labgrid/venv")
 }
 
 /// Returns the path to the app configuration file.
