@@ -253,7 +253,6 @@ pub(crate) struct ErrorReport {
 }
 
 /// Holds the entire app state
-#[derive(Debug)]
 pub(crate) struct App {
     /// The state that is dependent on the status of the connection.
     pub(crate) state: AppState,
@@ -261,6 +260,8 @@ pub(crate) struct App {
     pub(crate) modal: Modal,
     /// Optimize the UI for touch input.
     pub(crate) optimize_touch: bool,
+    /// App clipboard. Needs to be held for the entire duration of the process.
+    pub(crate) clipboard: Option<Clipboard>,
     /// Determines if a internal clipboard implementation should be used instead of delegating copy/pasting
     /// to the system clipboard.
     ///
@@ -269,7 +270,7 @@ pub(crate) struct App {
     /// The data of the internal clipboard.
     ///
     /// Only used when `internal_clipboard` is set to `true`.
-    pub(crate) clipboard: String,
+    pub(crate) internal_clipboard_buf: String,
     /// The current app language.
     ///
     /// Whenever the language is changed, the [i18n::change_language] routine is called.
@@ -288,6 +289,24 @@ pub(crate) struct App {
     pub(crate) scripts_dir: PathBuf,
 }
 
+impl std::fmt::Debug for App {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("App")
+            .field("state", &self.state)
+            .field("modal", &self.modal)
+            .field("optimize_touch", &self.optimize_touch)
+            .field("clipboard", &".. no debug impl ..")
+            .field("internal_clipboard", &self.internal_clipboard)
+            .field("internal_clipboard_buf", &self.internal_clipboard_buf)
+            .field("language", &self.language)
+            .field("connection_sender", &self.connection_sender)
+            .field("errors", &self.errors)
+            .field("venv_dir", &self.venv_dir)
+            .field("scripts_dir", &self.scripts_dir)
+            .finish()
+    }
+}
+
 impl App {
     /// Create a new application with options:
     /// - the supplied labgrid coordinator address.
@@ -304,6 +323,11 @@ impl App {
         if let Err(err) = util::ensure_app_default_dirs() {
             error!(?err, "Ensure existance of app default dirs");
         };
+        let clipboard = if internal_clipboard {
+            None
+        } else {
+            Clipboard::new().ok()
+        };
 
         Self {
             state: AppState::NotConnected(AppNotConnected {
@@ -313,8 +337,9 @@ impl App {
                 .expect("Loaded language is not a variant of 'AppLanguage'"),
             modal: Modal::None,
             optimize_touch,
+            clipboard,
             internal_clipboard,
-            clipboard: String::default(),
+            internal_clipboard_buf: String::default(),
             connection_sender: None,
             errors: Vec::default(),
             venv_dir: util::default_venv_dir(),
@@ -359,9 +384,12 @@ impl App {
                 (None, Task::none())
             }
             AppMsg::ClipboardCopy(content) => {
-                if let Err(e) =
-                    set_clipboard_text(self.internal_clipboard, &mut self.clipboard, content)
-                {
+                if let Err(e) = set_clipboard_text(
+                    &mut self.clipboard,
+                    self.internal_clipboard,
+                    &mut self.internal_clipboard_buf,
+                    content,
+                ) {
                     error!("Set clipboard content, Err: {e:?}");
                     self.errors.push(ErrorReport {
                         criticality: ErrorCriticality::NonCritical,
@@ -530,8 +558,9 @@ impl App {
                     connected.update(
                         msg,
                         &mut self.connection_sender,
-                        self.internal_clipboard,
                         &mut self.clipboard,
+                        self.internal_clipboard,
+                        &mut self.internal_clipboard_buf,
                         &mut self.errors,
                         &self.venv_dir,
                     )
@@ -601,14 +630,19 @@ impl App {
 ///
 /// Retrieves from the system clipboard if `internal_clipboard` is set false,
 /// or from `clipboard` if set true.
-fn clipboard_text(internal_clipboard: bool, clipboard: &str) -> anyhow::Result<String> {
-    if internal_clipboard {
-        Ok(clipboard.to_owned())
+fn clipboard_text(
+    clipboard: &mut Option<Clipboard>,
+    internal_clipboard: bool,
+    internal_clipboard_buf: &str,
+) -> anyhow::Result<String> {
+    debug!("Get clipboard text");
+
+    if let Some(clipboard) = clipboard {
+        clipboard.get_text().context("Get clipboard text")
+    } else if internal_clipboard {
+        Ok(internal_clipboard_buf.to_owned())
     } else {
-        Clipboard::new()
-            .context("Create OS clipboard instance")?
-            .get_text()
-            .context("Get clipboard text")
+        Ok(String::default())
     }
 }
 
@@ -617,18 +651,19 @@ fn clipboard_text(internal_clipboard: bool, clipboard: &str) -> anyhow::Result<S
 /// Set the system clipboard text if `internal_clipboard` is set to false,
 /// or `clipboard` if set true.
 fn set_clipboard_text(
+    clipboard: &mut Option<Clipboard>,
     internal_clipboard: bool,
-    clipboard: &mut String,
+    internal_clipboard_buf: &mut String,
     text: String,
 ) -> anyhow::Result<()> {
-    if internal_clipboard {
-        *clipboard = text;
+    debug!("Set clipboard text");
+    if let Some(clipboard) = clipboard {
+        clipboard.set_text(text).context("Set clipboard text")
+    } else if internal_clipboard {
+        *internal_clipboard_buf = text;
         Ok(())
     } else {
-        Clipboard::new()
-            .context("Create OS clipboard instance")?
-            .set_text(text)
-            .context("Set clipboard text")
+        Ok(())
     }
 }
 
@@ -763,12 +798,14 @@ impl AppConnected {
     ///
     /// When `<new-app-state>` is [Option::Some], the app will transition into the hew state
     /// by the top-level app message handler.
+    #[allow(clippy::too_many_arguments)]
     fn update(
         &mut self,
         msg: ConnectedMsg,
         connection_sender: &mut Option<ConnectionSender>,
+        clipboard: &mut Option<Clipboard>,
         internal_clipboard: bool,
-        clipboard: &mut str,
+        internal_clipboard_buf: &mut str,
         errors: &mut Vec<ErrorReport>,
         venv_dir: &Path,
     ) -> (Option<AppState>, Task<AppMsg>) {
@@ -793,7 +830,7 @@ impl AppConnected {
                 (None, Task::none())
             }
             ConnectedMsg::ClipboardPasteAddPlaceName => {
-                match clipboard_text(internal_clipboard, clipboard) {
+                match clipboard_text(clipboard, internal_clipboard, internal_clipboard_buf) {
                     Ok(text) => self.add_place_text = text,
                     Err(e) => {
                         error!("Paste clipboard into add place text field, Err: {e:?}");
@@ -824,7 +861,7 @@ impl AppConnected {
                 (None, Task::none())
             }
             ConnectedMsg::ClipboardPasteAddPlaceMatchPattern => {
-                match clipboard_text(internal_clipboard, clipboard) {
+                match clipboard_text(clipboard, internal_clipboard, internal_clipboard_buf) {
                     Ok(text) => self.add_place_match_text = text,
                     Err(e) => {
                         error!("Paste clipboard into add place match text field, Err: {e:?}");
