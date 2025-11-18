@@ -17,7 +17,7 @@ version = "0.1.0"
 labgrid-ui-core = { path = "crates/core" }
 
 anyhow = "1.0.98"
-arboard = "3.5.0"
+arboard = { version = "3.5.0", features = ["wayland-data-control"] }
 clap = "4.5.37"
 directories = "6.0.0"
 fluent = "0.17.0"
