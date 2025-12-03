@@ -30,10 +30,10 @@ prerequisites:
     #!/usr/bin/env bash
     set -euxo pipefail
     if [[ '{{linux_distr}}' =~ 'fedora' ]]; then
-        {{sudo_cmd}} dnf install -y gcc protobuf-compiler protobuf-devel curl git
+        {{sudo_cmd}} dnf install -y gcc protobuf-compiler protobuf-devel vulkan-loader curl git
     elif [[ '{{linux_distr}}' =~ 'debian' ]] || [[ '{{linux_distr}}' =~ 'ubuntu' ]]; then
         {{sudo_cmd}} apt-get update
-        {{sudo_cmd}} apt-get install -y build-essential protobuf-compiler libprotobuf-dev curl git
+        {{sudo_cmd}} apt-get install -y build-essential protobuf-compiler libprotobuf-dev libvulkan1 curl git
     else
         echo "Can't install system dependencies, unsupported distro."
         exit 1
