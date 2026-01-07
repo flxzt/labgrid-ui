@@ -112,7 +112,7 @@ install-ui:
     install -Dm644 ./crates/ui/data/icons/com.duagon.labgrid-ui.svg -t ~/.local/share/icons/
 
 install-scripts:
-    cp ./scripts/* ~/.local/share/labgrid-ui/scripts/
+    install -Dm755 ./scripts/*.py ~/.local/share/labgrid-ui/scripts/
 
 uninstall-ui:
     rm ~/.local/share/metainfo/com.duagon.labgrid-ui.metainfo.xml || true
