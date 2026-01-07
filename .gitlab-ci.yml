@@ -8,9 +8,9 @@ stages:
   - licensing
 
 variables:
-  FEDORA_IMAGE: fedora:42
+  FEDORA_IMAGE: fedora:43
 
-.before-script-steps: &before-script-steps
+.before_script_steps: &before_script_steps
   - dnf install -y lsb-release just
   - just ci=true prerequisites
   - export PATH="$HOME/.cargo/bin:$PATH"
@@ -22,7 +22,7 @@ fmt-check:
   tags:
     - docker
   before_script:
-    - *before-script-steps
+    - *before_script_steps
   script:
     - just ci=true fmt-check
   needs: []
@@ -33,7 +33,7 @@ lint:
   tags:
     - docker
   before_script:
-    - *before-script-steps
+    - *before_script_steps
     - cargo binstall -y gitlab_clippy
   script:
     - just ci=true lint
@@ -55,7 +55,7 @@ unit-tests:
   tags:
     - docker
   before_script:
-    - *before-script-steps
+    - *before_script_steps
     - cargo binstall -y cargo-nextest
   script:
     - just ci=true test
@@ -72,7 +72,7 @@ build-ui:
   tags:
     - docker
   before_script:
-    - *before-script-steps
+    - *before_script_steps
   script:
     - just ci=true cargo_profile=release build
   artifacts:
@@ -86,7 +86,7 @@ build-ui-flatpak:
   tags:
     - docker
   before_script:
-    - *before-script-steps
+    - *before_script_steps
     - just ci=true prerequisites-flatpak
   script:
     - just ci=true cargo_profile=release build-ui-flatpak
@@ -104,7 +104,7 @@ licensing-check:
       - when: always
   dependencies: []
   before_script:
-    - *before-script-steps
+    - *before_script_steps
     - dnf install -y python3 uv
     - cargo binstall -y cargo-deny
   script:
@@ -120,7 +120,7 @@ licencing-doc-export:
       - when: always
   dependencies: []
   before_script:
-    - *before-script-steps
+    - *before_script_steps
     - dnf install -y python3 uv
   script:
     - just ci=true licensing-doc-export
@@ -137,7 +137,7 @@ sbom-export:
       - when: always
   dependencies: []
   before_script:
-    - *before-script-steps
+    - *before_script_steps
     - dnf install -y python3 uv
     - cargo binstall -y cargo-cyclonedx
   script:
