@@ -9,11 +9,11 @@ use iced::border::Radius;
 use iced::widget::scrollable::{Direction, Scrollbar};
 use iced::widget::text::Shaping;
 use iced::widget::{
-    button, center, column, container, horizontal_rule, horizontal_space, mouse_area, opaque, row,
-    rule, scrollable, stack, text, tooltip, Space, Text, Tooltip,
+    button, center, column, container, mouse_area, opaque, row, rule, scrollable, space, stack,
+    text, tooltip, Space, Text, Tooltip,
 };
 use iced::{Alignment, Color, Element, Length, Shadow, Theme, Vector};
-use iced_fonts::{bootstrap, Bootstrap, BOOTSTRAP_FONT};
+use iced_fonts::bootstrap;
 
 /// "Card" style for a container.
 ///
@@ -97,7 +97,7 @@ pub(crate) fn modal<'a>(
 
 /// View for nothing at all.
 pub(crate) fn view_empty() -> Element<'static, AppMsg> {
-    Space::new(0, 0).into()
+    Space::new().into()
 }
 
 /// View for an emoji from a character resolved to a emoji glyph by the Noto Emoji font.
@@ -106,31 +106,12 @@ pub(crate) fn view_emoji(emoji: char) -> Text<'static> {
     text(emoji).shaping(Shaping::Advanced).font(FONT_NOTO_EMOJI)
 }
 
-/// View for a regular sized icon from the bootstrap icon set.
-///
-/// Search through available icons here: <https://icons.getbootstrap.com/>
-pub(crate) fn view_icon(icon: Bootstrap) -> Text<'static> {
-    text(bootstrap::icon_to_char(icon))
-        .shaping(Shaping::Advanced)
-        .font(BOOTSTRAP_FONT)
-}
-
-/// View for an small sized icon from the bootstrap icon set.
-///
-/// Search through available icons here: <https://icons.getbootstrap.com/>
-pub(crate) fn view_icon_small(icon: Bootstrap) -> Text<'static> {
-    text(bootstrap::icon_to_char(icon))
-        .shaping(Shaping::Advanced)
-        .font(BOOTSTRAP_FONT)
-        .size(12)
-}
-
 /// View for a content separator intended to be used as a dynamic UI element only displayed when the scroll offset
 /// is greater then zero (content scrolled down).
 #[allow(unused)]
 pub(crate) fn view_scrollable_content_sep(scroll_offset: f32) -> Element<'static, AppMsg> {
     if scroll_offset > 0. {
-        horizontal_rule(1)
+        rule::horizontal(1)
             .style(|theme| {
                 let mut style = rule::default(theme);
                 let palette = theme.extended_palette();
@@ -173,7 +154,7 @@ pub(crate) fn view_list_row<'a>(
     left: impl Into<Element<'a, AppMsg>>,
     right: impl Into<Element<'a, AppMsg>>,
 ) -> Element<'a, AppMsg> {
-    row![left.into(), horizontal_space(), right.into()]
+    row![left.into(), space::horizontal(), right.into()]
         .align_y(Alignment::Center)
         .spacing(6)
         .padding(6)
@@ -198,7 +179,7 @@ pub(crate) fn view_section<'a>(
     column![
         row![
             view_heading(name),
-            horizontal_space(),
+            space::horizontal(),
             title_element.map(|e| e.into()).unwrap_or(view_empty())
         ]
         .align_y(iced::Alignment::Center),
@@ -226,7 +207,7 @@ pub(crate) fn view_errors<'a>(
     } else {
         column![
             column((0..n_errors.min(MAX_STACK)).map(|_| {
-                horizontal_rule(2)
+                rule::horizontal(2)
                     .style(|theme| {
                         let mut s = rule::default(theme);
                         s.color = theme.extended_palette().danger.strong.color;
@@ -253,8 +234,8 @@ pub(crate) fn view_error(error: &app::ErrorReport, optimize_touch: bool) -> Elem
         column![
             row![
                 text(criticality + " : " + error.short.as_str()),
-                horizontal_space(),
-                button(view_icon(Bootstrap::X))
+                space::horizontal(),
+                button(bootstrap::x())
                     .style(button::secondary)
                     .on_press(AppMsg::DismissError)
             ]
@@ -300,7 +281,7 @@ pub(crate) fn view_confirmation_modal<'a>(
                 button(text(fl!("confirmation-modal-cancel-button")))
                     .on_press(AppMsg::HideModal)
                     .style(button::secondary),
-                horizontal_space(),
+                space::horizontal(),
                 button(text(fl!("confirmation-modal-confirm-button")))
                     .on_press(confirm.hide_modal()),
             ]

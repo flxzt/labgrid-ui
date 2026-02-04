@@ -4,7 +4,7 @@
 
 use super::generic::{
     card_container_style, modal_container_style, optimized_scrollbar_properties, view_empty,
-    view_heading, view_icon, view_icon_small, view_list_row, view_section, view_text_tooltip,
+    view_heading, view_list_row, view_section, view_text_tooltip,
 };
 use super::{NONE_ELEMENT, UI_MAX_WIDTH};
 use crate::app::{
@@ -17,12 +17,12 @@ use crate::{scripts, util};
 use iced::border::Radius;
 use iced::widget::text::Shaping;
 use iced::widget::{
-    button, checkbox, column, container, horizontal_rule, horizontal_space, pick_list, row,
-    scrollable, text, text_input, Space,
+    button, checkbox, column, container, pick_list, row, rule, scrollable, space, text, text_input,
+    Space,
 };
 use iced::{padding, Alignment, Color, Element, Length};
 use iced_aw::{TabBarPosition, TabLabel, Tabs};
-use iced_fonts::Bootstrap;
+use iced_fonts::bootstrap;
 use labgrid_ui_core::types::{Place, Reservation, Resource, ResourceMatch};
 use std::collections::BTreeMap;
 use std::path::PathBuf;
@@ -66,7 +66,7 @@ pub(crate) fn view_place_general_info<'a>(
             .align_y(Alignment::Center),
             row![
                 view_text_tooltip(
-                    button(view_icon(Bootstrap::Backspace)).on_press(AppMsg::Connected(
+                    button(bootstrap::backspace()).on_press(AppMsg::Connected(
                         ConnectedMsg::ClearAddPlaceTagText {
                             place_name: place.name.clone()
                         }
@@ -74,7 +74,7 @@ pub(crate) fn view_place_general_info<'a>(
                     fl!("text-input-clear-tooltip")
                 ),
                 view_text_tooltip(
-                    button(view_icon(Bootstrap::Plus)).on_press(AppMsg::ConnectionMsg(
+                    button(bootstrap::plus()).on_press(AppMsg::ConnectionMsg(
                         ConnectionMsg::AddPlaceTag {
                             place_name: place.name.clone(),
                             tag: tag.to_owned()
@@ -83,7 +83,7 @@ pub(crate) fn view_place_general_info<'a>(
                     fl!("labgrid-place-add-tag-tooltip")
                 ),
                 view_text_tooltip(
-                    button(view_icon(Bootstrap::X)).on_press(AppMsg::Connected(
+                    button(bootstrap::x()).on_press(AppMsg::Connected(
                         ConnectedMsg::CloseAddPlaceTag {
                             place_name: place.name.clone()
                         }
@@ -106,7 +106,7 @@ pub(crate) fn view_place_general_info<'a>(
                     .spacing(3)
                     .wrap(),
                 view_text_tooltip(
-                    button(view_icon(Bootstrap::Plus)).on_press(AppMsg::Connected(
+                    button(bootstrap::plus()).on_press(AppMsg::Connected(
                         ConnectedMsg::ShowAddPlaceTag {
                             place_name: place.name.clone()
                         }
@@ -123,14 +123,14 @@ pub(crate) fn view_place_general_info<'a>(
             text(fl!("labgrid-place-name-label") + " : "),
             text(&place.name)
         ),
-        horizontal_rule(1),
+        rule::horizontal(1),
         view_list_row(
             text(fl!("labgrid-place-comment-label") + " : "),
             text(&place.comment)
         ),
-        horizontal_rule(1),
+        rule::horizontal(1),
         acquired_by_row,
-        horizontal_rule(1),
+        rule::horizontal(1),
         tags_row,
     ]
     .into()
@@ -151,7 +151,7 @@ pub(crate) fn view_places_tab<'a>(
         Some(
             row![
                 view_text_tooltip(
-                    button(view_icon(Bootstrap::Clipboard))
+                    button(bootstrap::clipboard())
                         .on_press(AppMsg::Connected(ConnectedMsg::ClipboardPasteAddPlaceName)),
                     fl!("clipboard-paste-tooltip")
                 ),
@@ -161,12 +161,12 @@ pub(crate) fn view_places_tab<'a>(
                 )
                 .on_input(|text| AppMsg::Connected(ConnectedMsg::UpdateAddPlaceName(text))),
                 view_text_tooltip(
-                    button(view_icon(Bootstrap::Backspace)).on_press(AppMsg::Connected(
+                    button(bootstrap::backspace()).on_press(AppMsg::Connected(
                         ConnectedMsg::UpdateAddPlaceName(String::new())
                     )),
                     fl!("text-input-clear-tooltip")
                 ),
-                Space::new(6, 0),
+                Space::new().width(6),
                 button(text(fl!("labgrid-place-add-button"))).on_press(AppMsg::ConnectionMsg(
                     ConnectionMsg::AddPlace {
                         name: add_place_text.to_string()
@@ -253,11 +253,11 @@ pub(crate) fn view_resources_tab<'a>(
     container(view_section(
         fl!("labgrid-resources-label"),
         Some(
-            checkbox(
-                fl!("labgrid-resources-only-show-available-checkbox"),
-                only_show_available,
-            )
-            .on_toggle(|show| AppMsg::Connected(ConnectedMsg::ResourcesOnlyShowAvailable(show))),
+            checkbox(only_show_available)
+                .label(fl!("labgrid-resources-only-show-available-checkbox"))
+                .on_toggle(|show| {
+                    AppMsg::Connected(ConnectedMsg::ResourcesOnlyShowAvailable(show))
+                }),
         ),
         scrollable(resources_list)
             .direction(optimized_scrollbar_properties(false, true, optimize_touch))
@@ -288,12 +288,12 @@ pub(crate) fn view_scripts_tab(
             Some(
                 row![
                     view_text_tooltip(
-                        button(view_icon(Bootstrap::Copy))
+                        button(bootstrap::copy())
                             .on_press(AppMsg::ClipboardCopy(connected.script_out.clone())),
                         fl!("clipboard-copy-tooltip")
                     ),
                     view_text_tooltip(
-                        button(view_icon(Bootstrap::Backspace))
+                        button(bootstrap::backspace())
                             .on_press(AppMsg::Connected(ConnectedMsg::ScriptOutClear)),
                         fl!("script-output-clear-tooltip")
                     ),
@@ -341,14 +341,14 @@ pub(crate) fn view_env<'a>(env: &'a Env, places: &'a [(Place, PlaceUi)]) -> Elem
         container(
             row![
                 text(EnvEntry::LgPlace.as_env_var() + " = "),
-                horizontal_space(),
+                space::horizontal(),
                 pick_list(places_names, selected_place, |p| {
                     AppMsg::Connected(ConnectedMsg::ScriptsEnvUpdate {
                         entry: EnvEntry::LgPlace,
                         value: p.to_string(),
                     })
                 }),
-                button(view_icon(Bootstrap::Backspace)).on_press(AppMsg::Connected(
+                button(bootstrap::backspace()).on_press(AppMsg::Connected(
                     ConnectedMsg::ScriptsEnvClear {
                         entry: EnvEntry::LgPlace
                     }
@@ -363,14 +363,14 @@ pub(crate) fn view_env<'a>(env: &'a Env, places: &'a [(Place, PlaceUi)]) -> Elem
         container(
             row![
                 text(EnvEntry::LgEnv.as_env_var() + " = "),
-                horizontal_space(),
+                space::horizontal(),
                 text(lg_env_val.clone()),
-                button(view_icon(Bootstrap::FoldertwoOpen)).on_press(AppMsg::Connected(
+                button(bootstrap::foldertwo_open()).on_press(AppMsg::Connected(
                     ConnectedMsg::ScriptsEnvOpenLgEnvFileDialog {
                         initial_file: PathBuf::from(lg_env_val)
                     }
                 )),
-                button(view_icon(Bootstrap::Backspace)).on_press(AppMsg::Connected(
+                button(bootstrap::backspace()).on_press(AppMsg::Connected(
                     ConnectedMsg::ScriptsEnvClear {
                         entry: EnvEntry::LgEnv
                     }
@@ -418,7 +418,7 @@ pub(crate) fn view_scripts<'a>(
             row![
                 container(text(scripts_dir_str)).padding(padding::right(5)),
                 view_text_tooltip(
-                    button(view_icon(Bootstrap::FoldertwoOpen)).on_press(AppMsg::Connected(
+                    button(bootstrap::foldertwo_open()).on_press(AppMsg::Connected(
                         ConnectedMsg::OpenChangeScriptsDirDialog {
                             initial_dir: scripts_dir.to_owned()
                         }
@@ -426,13 +426,13 @@ pub(crate) fn view_scripts<'a>(
                     fl!("scripts-dir-pick-tooltip")
                 ),
                 view_text_tooltip(
-                    button(view_icon(Bootstrap::Backspace)).on_press(AppMsg::ChangeScriptsDir {
+                    button(bootstrap::backspace()).on_press(AppMsg::ChangeScriptsDir {
                         dir: util::default_scripts_dir()
                     }),
                     fl!("scripts-dir-reset-tooltip")
                 ),
                 view_text_tooltip(
-                    button(view_icon(Bootstrap::ArrowClockwise))
+                    button(bootstrap::arrow_clockwise())
                         .on_press(AppMsg::Connected(ConnectedMsg::RescanScriptsDir)),
                     fl!("scripts-dir-rescan-tooltip")
                 ),
@@ -503,13 +503,13 @@ pub(crate) fn view_script<'a>(
 
     container(column![
         view_list_row(text(fl!("script-label") + " : "), text(filename)),
-        horizontal_rule(1),
+        rule::horizontal(1),
         view_list_row(text(fl!("script-status-label")), status_element),
-        horizontal_rule(1),
+        rule::horizontal(1),
         view_list_row(view_empty(), script_execute_abort_button)
     ])
     .style(card_container_style)
-    // Must be a fixed width for predictable layout and to avoid panic when using horizontal_space
+    // Must be a fixed width for predictable layout and to avoid panic when using space::horizontal
     .width(340)
     .padding(6)
     .into()
@@ -579,7 +579,7 @@ pub(crate) fn view_place<'a>(place: &'a Place, ui: &'a PlaceUi) -> Element<'a, A
 
     container(column![
         view_place_general_info(place, ui),
-        horizontal_rule(1),
+        rule::horizontal(1),
         view_list_row(
             button(text(fl!("show-details-button")))
                 .style(button::secondary)
@@ -592,7 +592,7 @@ pub(crate) fn view_place<'a>(place: &'a Place, ui: &'a PlaceUi) -> Element<'a, A
         )
     ])
     .style(card_container_style)
-    // Must be a fixed width for predictable layout and to avoid panic when using horizontal_space
+    // Must be a fixed width for predictable layout and to avoid panic when using space::horizontal
     .width(340)
     .padding(6)
     .into()
@@ -605,13 +605,13 @@ pub(crate) fn view_reservation(reservation: &Reservation) -> Element<'_, AppMsg>
             text(fl!("labgrid-reservation-owner-label") + " : "),
             text(&reservation.owner)
         ),
-        horizontal_rule(1),
+        rule::horizontal(1),
         view_list_row(
             text(fl!("labgrid-reservation-token-label") + " : "),
             row![
                 text(&reservation.token),
                 view_text_tooltip(
-                    button(view_icon(Bootstrap::Copy))
+                    button(bootstrap::copy())
                         .style(button::secondary)
                         .on_press(AppMsg::ClipboardCopy(reservation.token.clone())),
                     fl!("clipboard-copy-tooltip")
@@ -620,12 +620,12 @@ pub(crate) fn view_reservation(reservation: &Reservation) -> Element<'_, AppMsg>
             .align_y(Alignment::Center)
             .spacing(6)
         ),
-        horizontal_rule(1),
+        rule::horizontal(1),
         view_list_row(
             text(fl!("labgrid-reservation-prio-label") + " : "),
             text(reservation.prio.to_string())
         ),
-        horizontal_rule(1),
+        rule::horizontal(1),
         view_list_row(
             text(fl!("labgrid-reservation-filters-label") + " : "),
             text(format!("{:?}", reservation.filters))
@@ -640,7 +640,7 @@ pub(crate) fn view_reservation(reservation: &Reservation) -> Element<'_, AppMsg>
         ),
     ])
     .style(card_container_style)
-    // Must be a fixed width for predictable layout and to avoid panic when using horizontal_space
+    // Must be a fixed width for predictable layout and to avoid panic when using space::horizontal
     .width(340)
     .padding(6)
     .into()
@@ -665,13 +665,13 @@ pub(crate) fn view_resource<'a>(resource: &'a Resource, ui: &'a ResourceUi) -> E
         resource.path.resource_name
     );
     let copy_name_to_clipboard_button = view_text_tooltip(
-        button(view_icon(Bootstrap::Copy))
+        button(bootstrap::copy())
             .style(button::secondary)
             .on_press(AppMsg::ClipboardCopy(copy_clipboard_msg)),
         fl!("clipboard-copy-tooltip"),
     );
     let availability_widget = view_text_tooltip(
-        checkbox("", resource.available),
+        checkbox(resource.available),
         fl!("labgrid-resource-availability-tooltip"),
     );
 
@@ -689,18 +689,18 @@ pub(crate) fn view_resource<'a>(resource: &'a Resource, ui: &'a ResourceUi) -> E
                 .align_y(Alignment::Center)
                 .spacing(6)
             ),
-            horizontal_rule(1),
+            rule::horizontal(1),
             view_list_row(
                 text(fl!("labgrid-resource-acquired-label") + " : "),
                 text(&resource.acquired)
             ),
-            horizontal_rule(1),
+            rule::horizontal(1),
             // TODO: improve params view
             view_list_row(
                 text(fl!("labgrid-resource-params-label") + " : "),
                 text(format!("{:?}", resource.params))
             ),
-            horizontal_rule(1),
+            rule::horizontal(1),
             // TODO: improve extra view
             view_list_row(
                 text(fl!("labgrid-resource-extra-label") + " : "),
@@ -736,7 +736,7 @@ pub(crate) fn view_tag<'a>(place_name: &'a str, tag: (&'a str, &'a str)) -> Elem
             text(tag.0).size(12),
             text("=").size(12),
             text(tag.1).size(12),
-            button(view_icon_small(Bootstrap::X))
+            button(bootstrap::x())
                 .padding(2)
                 .style(button::secondary)
                 .on_press(AppMsg::ShowModal(Box::new(Modal::Confirmation {
@@ -791,7 +791,7 @@ pub(crate) fn view_resource_match<'a>(
         text(match_display),
         row![
             view_text_tooltip(
-                button(view_icon(Bootstrap::Copy))
+                button(bootstrap::copy())
                     .style(button::secondary)
                     .on_press(AppMsg::ClipboardCopy(match_pattern.clone())),
                 fl!("clipboard-copy-tooltip")
@@ -814,7 +814,7 @@ pub(crate) fn view_acquired_resource(acquired_resource: String) -> Element<'stat
     container(view_list_row(
         text(acquired_resource.clone()),
         view_text_tooltip(
-            button(view_icon(Bootstrap::Copy))
+            button(bootstrap::copy())
                 .style(button::secondary)
                 .on_press(AppMsg::ClipboardCopy(acquired_resource)),
             fl!("clipboard-copy-tooltip"),
@@ -848,8 +848,8 @@ pub(crate) fn view_place_details<'a>(
         column![
             row![
                 text(fl!("labgrid-place-details-header", place = place_name)).size(24),
-                horizontal_space(),
-                button(view_icon(Bootstrap::X)).on_press(AppMsg::HideModal)
+                space::horizontal(),
+                button(bootstrap::x()).on_press(AppMsg::HideModal)
             ],
             scrollable(
                 column![
@@ -861,11 +861,9 @@ pub(crate) fn view_place_details<'a>(
                         Some(
                             row![
                                 view_text_tooltip(
-                                    button(view_icon(Bootstrap::Clipboard)).on_press(
-                                        AppMsg::Connected(
-                                            ConnectedMsg::ClipboardPasteAddPlaceMatchPattern
-                                        )
-                                    ),
+                                    button(bootstrap::clipboard()).on_press(AppMsg::Connected(
+                                        ConnectedMsg::ClipboardPasteAddPlaceMatchPattern
+                                    )),
                                     fl!("clipboard-paste-tooltip")
                                 ),
                                 text_input(
@@ -879,14 +877,12 @@ pub(crate) fn view_place_details<'a>(
                                     )
                                 ),
                                 view_text_tooltip(
-                                    button(view_icon(Bootstrap::Backspace)).on_press(
-                                        AppMsg::Connected(
-                                            ConnectedMsg::UpdateAddPlaceMatchPattern(String::new())
-                                        )
-                                    ),
+                                    button(bootstrap::backspace()).on_press(AppMsg::Connected(
+                                        ConnectedMsg::UpdateAddPlaceMatchPattern(String::new())
+                                    )),
                                     fl!("text-input-clear-tooltip")
                                 ),
-                                Space::new(6, 0),
+                                Space::new().width(6),
                                 button(text(fl!("labgrid-place-resource-match-add-button")))
                                     .on_press(AppMsg::ConnectionMsg(
                                         ConnectionMsg::AddPlaceMatch {
@@ -926,14 +922,14 @@ pub(crate) fn view_app_connected(
         row![
             container(
                 row![
-                    view_icon(Bootstrap::Link),
+                    bootstrap::link(),
                     text(fl!(
                         "connected-to-coordinator-label",
                         address = connected.address.as_str()
                     )),
-                    horizontal_space(),
+                    space::horizontal(),
                     view_text_tooltip(
-                        button(view_icon(Bootstrap::ArrowClockwise))
+                        button(bootstrap::arrow_clockwise())
                             .on_press(AppMsg::Connected(ConnectedMsg::Refresh)),
                         fl!("refresh-ui-tooltip")
                     ),

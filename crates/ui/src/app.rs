@@ -169,7 +169,8 @@ pub(crate) fn run(args: Args) -> iced::Result {
         (app, Task::none())
     };
 
-    iced::application(App::title, App::update, views::view_app)
+    iced::application(initialize, App::update, views::view_app)
+        .title(App::title)
         .settings(iced::Settings {
             default_font: iced::Font::with_name("Cantarell"),
             ..Default::default()
@@ -190,7 +191,7 @@ pub(crate) fn run(args: Args) -> iced::Result {
         //.theme(|_| Theme::Light)
         .antialiasing(true)
         .exit_on_close_request(false)
-        .run_with(initialize)
+        .run()
 }
 
 /// The current application UI state.
@@ -405,7 +406,7 @@ impl App {
             }
             AppMsg::CloseLatestWindow => {
                 self.save_config_to_path();
-                (None, window::get_latest().and_then(window::close))
+                (None, window::latest().and_then(window::close))
             }
             AppMsg::CloseWindow(id) => {
                 self.save_config_to_path();

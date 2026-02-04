@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-use super::generic::{card_container_style, view_icon};
+use super::generic::card_container_style;
 use crate::app::{AppMsg, AppNotConnected, Modal, NotConnectedMsg};
 use crate::i18n::fl;
 use iced::widget::{button, container, row, text, text_input};
 use iced::{Alignment, Element, Length};
-use iced_fonts::Bootstrap;
+use iced_fonts::bootstrap;
 
 /// View for the UI when in state [crate::app::AppState::NotConnected]
 pub(crate) fn view_app_not_connected(not_connected: &AppNotConnected) -> Element<'_, AppMsg> {
@@ -15,7 +15,7 @@ pub(crate) fn view_app_not_connected(not_connected: &AppNotConnected) -> Element
         row![
             container(
                 row![
-                    view_icon(Bootstrap::Ban),
+                    bootstrap::ban(),
                     text_input(
                         fl!("coordinator-address-placeholder").as_str(),
                         not_connected.input_address.as_str()

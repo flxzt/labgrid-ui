@@ -4,17 +4,17 @@
 
 use crate::app::AppMsg;
 use crate::i18n::fl;
-use iced::widget::{column, container, text, vertical_space};
+use iced::widget::{column, container, space, text};
 use iced::{Alignment, Element, Length};
 
 /// View for the UI when in connecting state
 pub(crate) fn view_app_connecting(address: &str) -> Element<'_, AppMsg> {
     container(
         column![
-            vertical_space(),
+            space::vertical(),
             text(fl!("connecting-msg", address = address)),
             // TODO: spinner
-            vertical_space()
+            space::vertical()
         ]
         .width(Length::Fill)
         .align_x(Alignment::Center),
