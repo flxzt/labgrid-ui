@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 fn main() -> anyhow::Result<()> {
-    tonic_build::configure()
+    tonic_prost_build::configure()
         .build_server(false)
         .build_client(true)
         .compile_protos(&["proto/labgrid-coordinator.proto"], &["proto/"])?;

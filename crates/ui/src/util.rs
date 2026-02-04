@@ -71,8 +71,7 @@ pub(crate) fn ensure_app_default_dirs() -> anyhow::Result<()> {
 /// First attempts to read out `LG_HOSTNAME` environment variable,
 /// defaulting to the system hostname if not present.
 pub(crate) fn get_lg_hostname() -> String {
-    std::env::var("LG_HOSTNAME")
-        .unwrap_or_else(|_| whoami::fallible::hostname().unwrap_or_default())
+    std::env::var("LG_HOSTNAME").unwrap_or_else(|_| whoami::hostname().unwrap_or_default())
 }
 
 /// Get the username for usage by the labgrid grpc client.
@@ -80,6 +79,5 @@ pub(crate) fn get_lg_hostname() -> String {
 /// First attempts to read out `LG_USERNAME` environment variable,
 /// defaulting to the system username if not present.
 pub(crate) fn get_lg_username() -> String {
-    std::env::var("LG_USERNAME")
-        .unwrap_or_else(|_| whoami::fallible::username().unwrap_or_default())
+    std::env::var("LG_USERNAME").unwrap_or_else(|_| whoami::username().unwrap_or_default())
 }
