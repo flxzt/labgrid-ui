@@ -7,7 +7,7 @@
 /.flatpak/
 /.flatpak-builder/
 /flatpak-build/
-/public/
+/docs-out/
 /flatpak-repo/
 /*.flatpak
 /*.code-workspace

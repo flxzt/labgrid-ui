@@ -2,26 +2,20 @@
 
 ci := "false"
 cargo_profile := "dev"
+cargo_target := "x86_64-unknown-linux-gnu"
 flatpak_build_dir := "flatpak-build"
 flatpak_repo_dir := "flatpak-repo"
 license := "GPL-3.0-or-later"
+docs_out_folder := "docs-out"
 
 [private]
-sudo_cmd := if ci == "true" {
-    ""
-} else {
-    "sudo"
-}
+sudo_cmd := if ci == "true" { "" } else { "sudo" }
 [private]
-nextest_ci_args := if ci == "true" {
-    "--profile ci"
-} else {
-    ""
-}
+nextest_ci_args := if ci == "true" { "--profile ci" } else { "" }
 [private]
 linux_distr := `lsb_release -ds | tr '[:upper:]' '[:lower:]'`
 [private]
-cargo_out_profile := if cargo_profile == "dev" { "debug" } else { cargo_profile }
+cargo_profile_folder := if cargo_profile == "dev" { "debug" } else { cargo_profile }
 
 default:
     just --list
@@ -99,14 +93,14 @@ lint:
 test *NEXTEST_ARGS:
     cargo nextest run --workspace --no-tests warn {{nextest_ci_args}} {{NEXTEST_ARGS}}
 
-build *ARGS:
-    cargo build --profile {{cargo_profile}} {{ARGS}}
+build *CARGO_ARGS:
+    cargo build --profile {{cargo_profile}} --target {{cargo_target}} {{CARGO_ARGS}}
 
-install-ui:
-    cargo install --profile {{cargo_profile}} --path crates/ui
+install-ui: build
     mkdir -p ~/.local/share/metainfo || true
     mkdir -p ~/.local/share/applications || true
     mkdir -p ~/.local/share/icons || true
+    install -Dm755 ./target/{{cargo_target}}/{{cargo_profile_folder}}/labgrid-ui ~/.local/bin/
     install -Dm644 ./crates/ui/data/com.duagon.labgrid-ui.metainfo.xml -t ~/.local/share/metainfo/
     install -Dm755 ./crates/ui/data/com.duagon.labgrid-ui.desktop -t ~/.local/share/applications/
     install -Dm644 ./crates/ui/data/icons/com.duagon.labgrid-ui.svg -t ~/.local/share/icons/
@@ -119,35 +113,35 @@ uninstall-ui:
     rm ~/.local/share/applications/com.duagon.labgrid-ui.desktop || true
     rm ~/.local/share/icons/com.duagon.labgrid-ui.svg || true
 
-run-ui *ARGS:
-    cargo run --profile {{cargo_profile}} -p labgrid-ui -- {{ARGS}}
+run-ui *APP_ARGS:
+    cargo run --profile {{cargo_profile}} --target {{cargo_target}} -p labgrid-ui -- {{APP_ARGS}}
 
 build-ui-flatpak:
     flatpak-builder --force-clean --repo={{flatpak_repo_dir}} {{flatpak_build_dir}} auxiliary/com.duagon.labgrid-ui.yaml
     flatpak build-bundle {{flatpak_repo_dir}} com.duagon.labgrid-ui.flatpak com.duagon.labgrid-ui
 
-run-testcli *ARGS:
-    cargo run --profile {{cargo_profile}} -p labgrid-ui-testcli -- {{ARGS}}
+run-testcli *APP_ARGS:
+    cargo run --profile {{cargo_profile}} --target {{cargo_target}} -p labgrid-ui-testcli -- {{APP_ARGS}}
 
 deploy-ui-remote target:
     #!/usr/bin/env bash
     set -euxo pipefail
-    cargo build --profile release
+    cargo build --profile {{cargo_profile}} --target {{cargo_target}}
     tmpdir=$(ssh {{target}} "mktemp -d")
-    scp target/release/labgrid-ui "{{target}}:${tmpdir}/labgrid-ui"
+    scp ./target/{{cargo_target}}/{{cargo_profile_folder}}/labgrid-ui "{{target}}:${tmpdir}/labgrid-ui"
     ssh -t {{target}} "sudo mv \"${tmpdir}/labgrid-ui\" /usr/local/bin/labgrid-ui"
 
-# prepares the ui docs for deployment by CI with gitlab pages
-docs-ui-prepare:
-    cargo doc -p labgrid-ui
-    mkdir -p public
-    cp -r target/doc/* public/.
-    echo '<meta http-equiv="refresh" content="0; url=labgrid_ui">' > public/index.html
+docs-build package *CARGO_DOC_ARGS:
+    cargo doc -p {{package}} {{CARGO_DOC_ARGS}}
 
-docs-ui-open:
-    cargo doc -p labgrid-ui --open
+# prepares the UI docs for deployment by CI with gitlab pages
+docs-ui-prepare: (docs-build "labgrid-ui" "--no-deps")
+    -rm -r {{docs_out_folder}}
+    mkdir {{docs_out_folder}}
+    cp -r target/doc/* {{docs_out_folder}}/.
+    echo '<meta http-equiv="refresh" content="0; url=labgrid_ui">' > {{docs_out_folder}}/index.html
 
-docs-open package:
+docs-open package: (docs-build package)
     cargo doc -p {{package}} --open
 
 check-outdated-dependencies:

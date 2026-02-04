@@ -74,10 +74,14 @@ build-ui:
   before_script:
     - *before_script_steps
   script:
-    - just ci=true cargo_profile=release build
+    - |
+      just \
+        ci=true \
+        cargo_profile=release \
+        build
   artifacts:
     paths:
-      - target/release/labgrid-ui
+      - target/x86_64-unknown-linux-gnu/release/labgrid-ui
   needs: []
 
 build-ui-flatpak:
