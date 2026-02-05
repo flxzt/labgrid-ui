@@ -510,7 +510,7 @@ pub(crate) fn view_script<'a>(
     ])
     .style(card_container_style)
     // Must be a fixed width for predictable layout and to avoid panic when using space::horizontal
-    .width(340)
+    .width(320)
     .padding(6)
     .into()
 }
@@ -593,7 +593,7 @@ pub(crate) fn view_place<'a>(place: &'a Place, ui: &'a PlaceUi) -> Element<'a, A
     ])
     .style(card_container_style)
     // Must be a fixed width for predictable layout and to avoid panic when using space::horizontal
-    .width(340)
+    .width(320)
     .padding(6)
     .into()
 }
@@ -641,7 +641,7 @@ pub(crate) fn view_reservation(reservation: &Reservation) -> Element<'_, AppMsg>
     ])
     .style(card_container_style)
     // Must be a fixed width for predictable layout and to avoid panic when using space::horizontal
-    .width(340)
+    .width(320)
     .padding(6)
     .into()
 }

@@ -21,7 +21,7 @@ use crate::app::{App, AppMsg, AppState, Modal};
 use connected::{view_app_connected, view_place_details};
 use connecting::view_app_connecting;
 use generic::{modal, view_confirmation_modal, view_errors};
-use iced::widget::{column, container, space};
+use iced::widget::{column, container};
 use iced::{Element, Length};
 use notconnected::view_app_not_connected;
 use settings::view_settings;
@@ -44,7 +44,6 @@ pub(crate) fn view_app(app: &App) -> Element<'_, AppMsg> {
     };
     let content = container(column![
         state_content,
-        space::vertical(),
         view_errors(app.errors.iter(), app.optimize_touch)
     ])
     .width(Length::Fill)
